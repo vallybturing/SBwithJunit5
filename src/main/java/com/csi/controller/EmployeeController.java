@@ -22,6 +22,24 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
 
+    @PostMapping("/saveAll")
+    public ResponseEntity<List<Employee>> bulkCreate(@RequestBody List<EmployeeDTO> employees) {
+        List<Employee> saved = employeeService.saveAll(employees);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PutMapping("/updateAll")
+    public ResponseEntity<List<Employee>> bulkUpdate(@RequestBody List<Employee> employees) {
+        List<Employee> updated = employeeService.updateAll(employees);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<Void> bulkDelete(@RequestBody List<Integer> ids) {
+        employeeService.deleteAllByIds(ids);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchEmployees(
             @RequestParam String name,
