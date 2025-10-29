@@ -12,8 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -84,5 +87,32 @@ class EmployeeServiceImplTest {
         Pageable pageable = PageRequest.of(0, 1);
         Page<Employee> employees = employeeService.searchEmployees("am", pageable);
         assertEquals(1, employees.getContent().size());
+    }
+
+    @Test
+    void updateSaveDeleteAllTest() {
+
+        //save
+        List<EmployeeDTO> employeeDTO = new ArrayList<>();
+        employeeDTO.add(new EmployeeDTO("Name 1", "United Stated Of America",
+                "8523647982", "852365.62", new Date(13 - 11 - 2003), "akshay.k@gmail.com"));
+        employeeDTO.add(new EmployeeDTO("Name 2", "United Stated Of America",
+                "8523647982", "852365.62", new Date(13 - 11 - 2003), "akshay1.k@gmail.com"));
+
+        List<Employee> result = employeeService.saveAll(employeeDTO);
+        Employee employeeData = employeeDao.getDataById(result.get(0).getEmpId());
+        assertEquals("Name 1", employeeData.getEmpName());
+
+        //update
+        result.get(0).setEmpName("John Kennedy");
+        List<Employee> result_update = employeeService.updateAll(result);
+        employeeData = employeeDao.getDataById(result_update.get(0).getEmpId());
+        assertEquals("John Kennedy", employeeData.getEmpName());
+
+        //delete
+        List<Integer> empIds =  result.stream().map(Employee::getEmpId).toList();
+        employeeService.deleteAllByIds(empIds);;
+        assertThrows(EmployeeNotFound.class, () -> employeeService.getDataById(empIds.get(0)));
+
     }
 }

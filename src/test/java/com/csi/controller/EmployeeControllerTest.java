@@ -17,14 +17,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
@@ -187,6 +186,59 @@ class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", notNullValue()))
                 .andExpect(jsonPath("$.content[0].empName").value("Ram K"));
+    }
+
+    @Test
+    void saveUpdateDeleteDataTest() throws Exception {
+
+        //save
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyy");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
+        objectMapper.setDateFormat(simpleDateFormat);
+
+        List<EmployeeDTO> employeeDTO = new ArrayList<>();
+        employeeDTO.add(new EmployeeDTO("Name 1", "United Stated Of America",
+                "8523647982", "852365.62", new Date(13 - 11 - 2003), "akshay.k@gmail.com"));
+        employeeDTO.add(new EmployeeDTO("Name 2", "United Stated Of America",
+                "8523647982", "852365.62", new Date(13 - 11 - 2003), "akshay1.k@gmail.com"));
+
+
+        List<Employee> employeeListInput = Stream.of(
+                new Employee(6, "Name 1", "United Stated Of America", 8523647982L,
+                        852365.62, new Date(13 - 11 - 2003), "akshay.k@gmail.com"),
+                new Employee(7, "Name 2", "United Stated Of America", 8523647982L,
+                        852365.62, new Date(13 - 11 - 2003), "akshay1.k@gmail.com")).toList();
+
+        when(employeeService.saveAll(ArgumentMatchers.any())).thenReturn(employeeListInput);
+
+        mockMvc.perform(post("/employee/saveAll").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(employeeDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(content().json(objectMapper.writeValueAsString(employeeListInput)))
+                .andExpect(jsonPath("$[0].empName", is(employeeListInput.get(0).getEmpName())));
+
+        verify(employeeService, times(1)).saveAll(ArgumentMatchers.any());
+
+        List<Employee> employeeListOutput = Stream.of(
+                new Employee(6, "Name 3", "United Stated Of America", 8523647982L,
+                        852365.62, new Date(13 - 11 - 2003), "akshay.k@gmail.com"),
+                new Employee(7, "Name 4", "United Stated Of America", 8523647982L,
+                        852365.62, new Date(13 - 11 - 2003), "akshay1.k@gmail.com")).toList();
+
+        when(employeeService.updateAll(ArgumentMatchers.any())).thenReturn(employeeListOutput);
+
+        mockMvc.perform(put("/employee/updateAll").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(employeeListInput)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(content().json(objectMapper.writeValueAsString(employeeListOutput)))
+                .andExpect(jsonPath("$[0].empName", is(employeeListOutput.get(0).getEmpName())));
+
+        verify(employeeService, times(1)).updateAll(ArgumentMatchers.any());
+
+        //Delete
+        List<Integer> empIds = Arrays.asList(6, 7);
+        mockMvc.perform(delete("/employee/deleteAll").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(empIds)))
+                .andExpect(status().isNoContent());
     }
 
 

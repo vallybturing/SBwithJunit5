@@ -21,4 +21,10 @@ public interface EmployeeDao {
     List<Employee> searchEmployees(String name);
 
     Page<Employee> searchEmployees(String name, Pageable pageable);
+
+    List<Employee> saveAll(List<Employee> employeeList);
+
+    List<Employee> updateAll(List<Employee> employeeList);
+
+    void deleteAllByIds(List<Integer> empIds);
 }

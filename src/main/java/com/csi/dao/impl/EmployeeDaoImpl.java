@@ -51,4 +51,30 @@ public class EmployeeDaoImpl implements EmployeeDao {
     public Page<Employee> searchEmployees(String name, Pageable pageable) {
         return employeeRepository.findByEmpNameContainingIgnoreCase(name, pageable);
     }
+
+    @Override
+    public List<Employee> saveAll(List<Employee> employeeList) {
+        return employeeRepository.saveAll(employeeList);
+    }
+
+    @Override
+    public List<Employee> updateAll(List<Employee> employees) {
+        // Ensure each employee exists before update
+        for (Employee emp : employees) {
+            if (!employeeRepository.existsById(emp.getEmpId())) {
+                throw new RuntimeException("Employee not found with ID: " + emp.getEmpId());
+            }
+        }
+        return employeeRepository.saveAll(employees);
+    }
+
+    @Override
+    public void deleteAllByIds(List<Integer> empIds) {
+        for (Integer empId : empIds) {
+            if (!employeeRepository.existsById(empId)) {
+                throw new RuntimeException("Employee not found with ID: " + empId);
+            }
+        }
+        employeeRepository.deleteAllById(empIds);
+    }
 }
