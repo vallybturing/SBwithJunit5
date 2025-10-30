@@ -17,3 +17,9 @@ spring:
   sql:
     init:
       mode: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
